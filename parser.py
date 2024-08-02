@@ -83,12 +83,17 @@ def main(local=True,filename='./py-files/chap2/sec_2_7.py',mode='simple'):
 
 if __name__ == '__main__':
     local = True
-    PYTHON_TEXTBOOK_EXAMPLES = './py-files/'
+    PYTHON_TEXTBOOK_EXAMPLES =  './py-files/' #'./pcex-python-code/' # './py-files/'
     ## TODO handle case for non local (such as server api setup)
     if local: 
         section_concepts = {}
-        section_concepts ['sec_name']= []
-        section_concepts['concepts'] = []
+        if PYTHON_TEXTBOOK_EXAMPLES == './pcex-python-code/':
+            section_concepts ['content_name']= []
+        if PYTHON_TEXTBOOK_EXAMPLES == './py-files/':
+            section_concepts['content_id'] = []
+            section_concepts ['section_id']= []
+
+        section_concepts['concept'] = []
         
         for root,curr_dir,files in os.walk(PYTHON_TEXTBOOK_EXAMPLES):
             for fname in tqdm(files):
@@ -96,20 +101,64 @@ if __name__ == '__main__':
                     try:
                         codelines,response =  main(local,path.join(root,fname))
                         # print(response)
-                        section_concepts['sec_name'].append(path.splitext(fname)[0])
-                        section_concepts['concepts'].append('_'.join(list(response)).lower())
+                        if PYTHON_TEXTBOOK_EXAMPLES == './py-files/':
+                            section_concepts['content_id'].append(section_concepts['content_id'][-1]+1 if len(section_concepts['content_id']) >0 else 143)
+                            section_concepts['section_id'].append(path.splitext(fname)[0])
+                        if PYTHON_TEXTBOOK_EXAMPLES == './pcex-python-code/':
+                            section_concepts['content_name'].append(path.splitext(fname)[0])
+                        section_concepts['concept'].append('_'.join(list(response)))
                         # print(section_concepts)
+
                     except Exception:
                         print(root,fname)
             # print(response['lines'])
         # print(codelines)
         
-        smart_concepts_sections = pd.DataFrame.from_dict(section_concepts).sort_values(by='sec_name')
-        smart_concepts_sections['prev_concepts'] = smart_concepts_sections['concepts'].shift(1)
-        smart_concepts_sections.to_csv('./smart_content_section_concepts.csv',index=False)
+        smart_concepts_sections = pd.DataFrame.from_dict(section_concepts)#.sort_values(by='section_id')
+        # smart_concepts_sections.loc[:,'date_updated'] = pd.to_datetime('today')
+        # smart_concepts_sections = smart_concepts_sections.explode('concept')
+
+        if PYTHON_TEXTBOOK_EXAMPLES == './py-files/': 
+            db = pd.read_csv('./readingmirror-data-files/smart_learning_content_section.csv')
+
+        if PYTHON_TEXTBOOK_EXAMPLES == './pcex-python-code/':
+            db = pd.read_csv('./readingmirror-data-files/smart_learning_content_concepts.csv')
+        
+        if PYTHON_TEXTBOOK_EXAMPLES == './py-files/':
+            smart_concepts_sections.loc[:,'resource_id'] = 'pfe'
+            smart_concepts_sections.loc[:,'is_active'] = 1
+            smart_concepts_sections.loc[:,'date_added'] = '2024-06-23 19:40:02'
+            smart_concepts_sections.to_csv('./smart_learning_content_section.csv',index=False)
+
+        if PYTHON_TEXTBOOK_EXAMPLES == './pcex-python-code/':
+            smart_concepts_sections.loc[:,'domain']='py'
+            smart_concepts_sections.loc[:,'weight']=1
+            smart_concepts_sections.loc[:,'active']=1
+            smart_concepts_sections.loc[:,'source_method']='parser'
+            smart_concepts_sections.loc[:,'importance']=1
+            smart_concepts_sections.loc[:,'contributesK']=1
+            smart_concepts_sections.loc[:,'component_name'] = smart_concepts_sections.loc[:,'concept']
+            smart_concepts_sections.loc[:,'context_name'] = smart_concepts_sections.loc[:,'concept']
+            smart_concepts_sections[[x for x in smart_concepts_sections.columns if not(x == 'concept')]].to_csv('./smart_learning_content_concepts.csv',index=False)
+            
+
  # type: ignore
 
 
 ## TODO something from outcomes nothing beyong
 ## TODO why is it being allocated this way -- indexing mistake ?
 ## TODO all the worksexamples  -- get the py 
+
+
+
+
+
+### Parser gives all the concepts -- new section / new concepts
+### update the database for chatper sections 
+### update the smartcontent database  
+### filter in a separate -- no from future (before or present)
+### filter smart contne database -- no from future (before or present)
+
+
+
+

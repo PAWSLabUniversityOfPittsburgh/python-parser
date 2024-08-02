@@ -30,8 +30,13 @@ def simpleTraverse(node, line, nodes):
     name = node.__class__.__name__
     # if name == 'Constant': print(re.split(r'[<,\s,>,\']',str(type(node.__dict__['value']))))
     # if name == 'Call': print(node.__dict__['func'].__dict__['id'])
-    name = re.split(r'[<,\s,>,\']',str(type(node.__dict__['value'])))[3].capitalize() if name == 'Constant' else name
-    name = node.__dict__['func'].__dict__['id'] if name == 'Call' else name
+    
+    if name == 'Constant':
+        name = re.split(r'[<,\s,>,\']',str(type(node.__dict__['value'])))[3].capitalize()
+
+    if name =='Call':  
+        name = f"{node.__dict__['func'].__dict__['id']}" if 'id' in node.__dict__['func'].__dict__ else ''
+        if not(name.lower() == 'print') and not(name.lower() == 'input'): name = ''
 
     # Only some nodes contain line number
     if hasattr(node, 'lineno'):
