@@ -2,4 +2,8 @@ pcex-python-code/
 readingmirror-data-files/
 chap*/
 *.csv
+pcex/
+parsons/
+quizpet/
+
 

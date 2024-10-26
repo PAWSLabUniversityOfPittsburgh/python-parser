@@ -83,11 +83,11 @@ def main(local=True,filename='./py-files/chap2/sec_2_7.py',mode='simple'):
 
 if __name__ == '__main__':
     local = True
-    PYTHON_TEXTBOOK_EXAMPLES =  './py-files/' #'./pcex-python-code/' # './py-files/'
+    PYTHON_TEXTBOOK_EXAMPLES = './pcex/' #'./py-files/' #'./pcex-python-code/' # './py-files/'
     ## TODO handle case for non local (such as server api setup)
     if local: 
         section_concepts = {}
-        if PYTHON_TEXTBOOK_EXAMPLES == './pcex-python-code/':
+        if PYTHON_TEXTBOOK_EXAMPLES == './pcex/':
             section_concepts ['content_name']= []
         if PYTHON_TEXTBOOK_EXAMPLES == './py-files/':
             section_concepts['content_id'] = []
@@ -104,7 +104,7 @@ if __name__ == '__main__':
                         if PYTHON_TEXTBOOK_EXAMPLES == './py-files/':
                             section_concepts['content_id'].append(section_concepts['content_id'][-1]+1 if len(section_concepts['content_id']) >0 else 143)
                             section_concepts['section_id'].append(path.splitext(fname)[0])
-                        if PYTHON_TEXTBOOK_EXAMPLES == './pcex-python-code/':
+                        if PYTHON_TEXTBOOK_EXAMPLES == './pcex/':
                             section_concepts['content_name'].append(path.splitext(fname)[0])
                         section_concepts['concept'].append('_'.join(list(response)))
                         # print(section_concepts)
@@ -121,7 +121,7 @@ if __name__ == '__main__':
         if PYTHON_TEXTBOOK_EXAMPLES == './py-files/': 
             db = pd.read_csv('./readingmirror-data-files/smart_learning_content_section.csv')
 
-        if PYTHON_TEXTBOOK_EXAMPLES == './pcex-python-code/':
+        if PYTHON_TEXTBOOK_EXAMPLES == './pcex/':
             db = pd.read_csv('./readingmirror-data-files/smart_learning_content_concepts.csv')
         
         if PYTHON_TEXTBOOK_EXAMPLES == './py-files/':
@@ -130,7 +130,7 @@ if __name__ == '__main__':
             smart_concepts_sections.loc[:,'date_added'] = '2024-06-23 19:40:02'
             smart_concepts_sections.to_csv('./smart_learning_content_section.csv',index=False)
 
-        if PYTHON_TEXTBOOK_EXAMPLES == './pcex-python-code/':
+        if PYTHON_TEXTBOOK_EXAMPLES == './pcex/':
             smart_concepts_sections.loc[:,'domain']='py'
             smart_concepts_sections.loc[:,'weight']=1
             smart_concepts_sections.loc[:,'active']=1
