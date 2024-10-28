@@ -6,4 +6,5 @@ pcex/
 parsons/
 quizpet/
 *.json
-
+*.pyc
+*/__pycache__/*

@@ -83,64 +83,68 @@ def main(local=True,filename='./py-files/chap2/sec_2_7.py',mode='simple'):
 
 if __name__ == '__main__':
     local = True
-    PYTHON_TEXTBOOK_EXAMPLES = './pcex/' #'./py-files/' #'./pcex-python-code/' # './py-files/'
     ## TODO handle case for non local (such as server api setup)
     if local: 
-        section_concepts = {}
-        if PYTHON_TEXTBOOK_EXAMPLES == './pcex/':
-            section_concepts ['content_name']= []
-        if PYTHON_TEXTBOOK_EXAMPLES == './py-files/':
-            section_concepts['content_id'] = []
-            section_concepts ['section_id']= []
-
-        section_concepts['concept'] = []
+        PYTHON_TEXTBOOK_EXAMPLE_LIST = ['pcex','py-files','pcex','pcex-python-code','quizpet','parsons']
+        SMART_CONTENT_LIST = ['pcex','quizpet','pcex-python-code','parsons']
         
-        for root,curr_dir,files in os.walk(PYTHON_TEXTBOOK_EXAMPLES):
-            for fname in tqdm(files):
-                if path.splitext(fname)[1] == '.py':
-                    try:
-                        codelines,response =  main(local,path.join(root,fname))
-                        # print(response)
-                        if PYTHON_TEXTBOOK_EXAMPLES == './py-files/':
-                            section_concepts['content_id'].append(section_concepts['content_id'][-1]+1 if len(section_concepts['content_id']) >0 else 143)
-                            section_concepts['section_id'].append(path.splitext(fname)[0])
-                        if PYTHON_TEXTBOOK_EXAMPLES == './pcex/':
-                            section_concepts['content_name'].append(path.splitext(fname)[0])
-                        section_concepts['concept'].append('_'.join(list(response)))
-                        # print(section_concepts)
+        for PYTHON_TEXTBOOK_EXAMPLES in PYTHON_TEXTBOOK_EXAMPLE_LIST:
+            print("processing",PYTHON_TEXTBOOK_EXAMPLES)
+            section_concepts = {}
+            if PYTHON_TEXTBOOK_EXAMPLES in SMART_CONTENT_LIST:
+                section_concepts ['content_name']= []
+            if PYTHON_TEXTBOOK_EXAMPLES == 'py-files':
+                section_concepts['content_id'] = []
+                section_concepts ['section_id']= []
 
-                    except Exception:
-                        print(root,fname)
-            # print(response['lines'])
-        # print(codelines)
-        
-        smart_concepts_sections = pd.DataFrame.from_dict(section_concepts)#.sort_values(by='section_id')
-        # smart_concepts_sections.loc[:,'date_updated'] = pd.to_datetime('today')
-        # smart_concepts_sections = smart_concepts_sections.explode('concept')
-
-        if PYTHON_TEXTBOOK_EXAMPLES == './py-files/': 
-            db = pd.read_csv('./readingmirror-data-files/smart_learning_content_section.csv')
-
-        if PYTHON_TEXTBOOK_EXAMPLES == './pcex/':
-            db = pd.read_csv('./readingmirror-data-files/smart_learning_content_concepts.csv')
-        
-        if PYTHON_TEXTBOOK_EXAMPLES == './py-files/':
-            smart_concepts_sections.loc[:,'resource_id'] = 'pfe'
-            smart_concepts_sections.loc[:,'is_active'] = 1
-            smart_concepts_sections.loc[:,'date_added'] = '2024-06-23 19:40:02'
-            smart_concepts_sections.to_csv('./smart_learning_content_section.csv',index=False)
-
-        if PYTHON_TEXTBOOK_EXAMPLES == './pcex/':
-            smart_concepts_sections.loc[:,'domain']='py'
-            smart_concepts_sections.loc[:,'weight']=1
-            smart_concepts_sections.loc[:,'active']=1
-            smart_concepts_sections.loc[:,'source_method']='parser'
-            smart_concepts_sections.loc[:,'importance']=1
-            smart_concepts_sections.loc[:,'contributesK']=1
-            smart_concepts_sections.loc[:,'component_name'] = smart_concepts_sections.loc[:,'concept']
-            smart_concepts_sections.loc[:,'context_name'] = smart_concepts_sections.loc[:,'concept']
-            smart_concepts_sections[[x for x in smart_concepts_sections.columns if not(x == 'concept')]].to_csv('./smart_learning_content_concepts.csv',index=False)
+            section_concepts['concept'] = []
             
+            for root,curr_dir,files in os.walk(f'./{PYTHON_TEXTBOOK_EXAMPLES}/'):
+                for fname in tqdm(files):
+                    if path.splitext(fname)[1] == '.py':
+                        try:
+                            codelines,response =  main(local,path.join(root,fname))
+                            # print(response)
+                            if PYTHON_TEXTBOOK_EXAMPLES == 'py-files':
+                                section_concepts['content_id'].append(section_concepts['content_id'][-1]+1 if len(section_concepts['content_id']) >0 else 143)
+                                section_concepts['section_id'].append(path.splitext(fname)[0])
+                            if PYTHON_TEXTBOOK_EXAMPLES in SMART_CONTENT_LIST:
+                                section_concepts['content_name'].append(path.splitext(fname)[0])
+                            section_concepts['concept'].append('_'.join(list(response)))
+                            # print(section_concepts)
+
+                        except Exception:
+                            print(root,fname)
+                # print(response['lines'])
+            # print(codelines)
+            
+            smart_concepts_sections = pd.DataFrame.from_dict(section_concepts)#.sort_values(by='section_id')
+            # smart_concepts_sections.loc[:,'date_updated'] = pd.to_datetime('today')
+            # smart_concepts_sections = smart_concepts_sections.explode('concept')
+
+            if PYTHON_TEXTBOOK_EXAMPLES == 'py-files': 
+                db = pd.read_csv('./readingmirror-data-files/smart_learning_content_section.csv')
+
+            if PYTHON_TEXTBOOK_EXAMPLES in SMART_CONTENT_LIST:
+                db = pd.read_csv(f'./readingmirror-data-files/smart_learning_content_concepts.csv')
+            
+            if PYTHON_TEXTBOOK_EXAMPLES == 'py-files':
+                smart_concepts_sections.loc[:,'resource_id'] = 'pfe'
+                smart_concepts_sections.loc[:,'is_active'] = 1
+                smart_concepts_sections.loc[:,'date_added'] = '2024-06-23 19:40:02'
+                smart_concepts_sections.to_csv('./smart_learning_content_section.csv',index=False)
+
+            if PYTHON_TEXTBOOK_EXAMPLES in SMART_CONTENT_LIST:
+                smart_concepts_sections.loc[:,'domain']='py'
+                smart_concepts_sections.loc[:,'weight']=1
+                smart_concepts_sections.loc[:,'active']=1
+                smart_concepts_sections.loc[:,'source_method']='parser'
+                smart_concepts_sections.loc[:,'importance']=1
+                smart_concepts_sections.loc[:,'contributesK']=1
+                smart_concepts_sections.loc[:,'component_name'] = smart_concepts_sections.loc[:,'concept']
+                smart_concepts_sections.loc[:,'context_name'] = smart_concepts_sections.loc[:,'concept']
+                smart_concepts_sections[[x for x in smart_concepts_sections.columns if not(x == 'concept')]].to_csv(f'./smart_learning_content_concepts_{PYTHON_TEXTBOOK_EXAMPLES}.csv',index=False)
+                
 
  # type: ignore
 

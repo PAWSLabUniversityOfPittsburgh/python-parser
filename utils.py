@@ -10,6 +10,7 @@ from ply.lex import lex
 # will be added to the list instead of the operator family.
 nodesToSkip = {'Store', 'Load', 'Name', 'Expr', 'arguments', 'Subscript', 'BoolOp', 'BinOp', 'Compare', 'UnaryOp'}
 tokensToSkip = {}
+allowed_call_names = ['print','input','dict','set','list']
 
 # *****************************************************************************
 # Special handlers for some nodes
@@ -36,7 +37,7 @@ def simpleTraverse(node, line, nodes):
 
     if name =='Call':  
         name = f"{node.__dict__['func'].__dict__['id']}" if 'id' in node.__dict__['func'].__dict__ else ''
-        if not(name.lower() == 'print') and not(name.lower() == 'input'): name = ''
+        if not(name.lower() in allowed_call_names): name = ''
 
     # Only some nodes contain line number
     if hasattr(node, 'lineno'):
