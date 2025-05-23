@@ -85,7 +85,7 @@ if __name__ == '__main__':
     local = True
     ## TODO handle case for non local (such as server api setup)
     if local: 
-        PYTHON_TEXTBOOK_EXAMPLE_LIST = ['pcex','py-files','pcex','pcex-python-code','quizpet','parsons']
+        PYTHON_TEXTBOOK_EXAMPLE_LIST = ['parsons','quizpet']#['pcex','py-files','pcex','pcex-python-code','quizpet','parsons']
         SMART_CONTENT_LIST = ['pcex','quizpet','pcex-python-code','parsons']
         
         for PYTHON_TEXTBOOK_EXAMPLES in PYTHON_TEXTBOOK_EXAMPLE_LIST:
@@ -122,12 +122,13 @@ if __name__ == '__main__':
             # smart_concepts_sections.loc[:,'date_updated'] = pd.to_datetime('today')
             # smart_concepts_sections = smart_concepts_sections.explode('concept')
 
-            if PYTHON_TEXTBOOK_EXAMPLES == 'py-files': 
-                db = pd.read_csv('./readingmirror-data-files/smart_learning_content_section.csv')
+            # if PYTHON_TEXTBOOK_EXAMPLES == 'py-files': 
+            #     db = pd.read_csv('./readingmirror-data-files/smart_learning_content_section.csv')
 
-            if PYTHON_TEXTBOOK_EXAMPLES in SMART_CONTENT_LIST:
-                db = pd.read_csv(f'./readingmirror-data-files/smart_learning_content_concepts.csv')
-            
+            # if PYTHON_TEXTBOOK_EXAMPLES in SMART_CONTENT_LIST:
+            #     db = pd.read_csv(f'./readingmirror-data-files/smart_learning_content_concepts.csv')
+            timestamp = pd.to_datetime('today').strftime('%Y%m%d%H%M%S')
+
             if PYTHON_TEXTBOOK_EXAMPLES == 'py-files':
                 smart_concepts_sections.loc[:,'resource_id'] = 'pfe'
                 smart_concepts_sections.loc[:,'is_active'] = 1
@@ -143,8 +144,9 @@ if __name__ == '__main__':
                 smart_concepts_sections.loc[:,'contributesK']=1
                 smart_concepts_sections.loc[:,'component_name'] = smart_concepts_sections.loc[:,'concept']
                 smart_concepts_sections.loc[:,'context_name'] = smart_concepts_sections.loc[:,'concept']
-                smart_concepts_sections[[x for x in smart_concepts_sections.columns if not(x == 'concept')]].to_csv(f'./smart_learning_content_concepts_{PYTHON_TEXTBOOK_EXAMPLES}.csv',index=False)
+                smart_concepts_sections[[x for x in smart_concepts_sections.columns if not(x == 'concept')]].to_csv(f'./smart_learning_content_concepts_{PYTHON_TEXTBOOK_EXAMPLES}_{timestamp}.csv',index=False)
                 
+            
 
  # type: ignore
 
