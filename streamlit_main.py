@@ -13,7 +13,7 @@ favicon = BytesIO(img_b.content).read()
 st.set_page_config(page_title="PCCP",
                    page_icon=favicon)
 
-st.title("PAWSLab Python Code Concepts Parser (PCCP)")
+st.title("University of Pittsburgh: PAWSLab Python Code Concepts Parser (PCCP)")
 st.image('http://adapt2.sis.pitt.edu/w/images/1/19/PAWS_logo.png')
 
 code_string = """
