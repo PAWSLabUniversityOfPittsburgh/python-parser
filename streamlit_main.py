@@ -6,14 +6,15 @@ from concepts_parser import main, post_process_parser
 import os
 
 # option = st.selectbox("Select Programming Language",("python","java"))
-url = 'https://www.python.org/static/community_logos/python-logo-master-v3-TM.png'
+url = 'http://adapt2.sis.pitt.edu/w/images/1/19/PAWS_logo.png'
 img_b = requests.get(url)
 favicon = BytesIO(img_b.content).read()
 
 st.set_page_config(page_title="PCCP",
                    page_icon=favicon)
 
-st.title("Python Code Concepts Parser (PCCP)")
+st.title("PAWSLab Python Code Concepts Parser (PCCP)")
+st.image('http://adapt2.sis.pitt.edu/w/images/1/19/PAWS_logo.png')
 
 code_string = """
 ### enter code here
