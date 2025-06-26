@@ -35,6 +35,7 @@ with st.form("code_form"):
     submitted = st.form_submit_button("Submit Code")
 
     if submitted:
+        if not(os.path.exists('./py-files')): os.mkdir('py-files')
         with open(f'./py-files/tmp1.py','w+') as f:
             f.write(code)
 
@@ -42,3 +43,4 @@ with st.form("code_form"):
         st.dataframe(post_process_parser(response))
 
         os.remove('./py-files/tmp1.py')
+        os.rmdir('./py-files')
