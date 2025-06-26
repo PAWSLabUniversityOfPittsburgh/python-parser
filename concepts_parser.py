@@ -15,6 +15,7 @@ from os import path
 from tqdm import tqdm
 import pandas as pd
 from utils import *
+from datetime import datetime
 
 
 def main(local=True,filename='./py-files/chap2/sec_2_7.py',mode='simple'):
@@ -80,6 +81,21 @@ def main(local=True,filename='./py-files/chap2/sec_2_7.py',mode='simple'):
         # print(re.split(r'[<,\s,>,\']',str(type(e)))[3], f'line no {e.args[1][1]}')
         if not(local): sys.exit(1)
 
+def post_process_parser(response,fname='tmp1.py'):
+    section_concepts = {}
+    section_concepts['content_id'] = []
+    section_concepts ['section_id']= []    
+    section_concepts['content_id'].append(section_concepts['content_id'][-1]+1 if len(section_concepts['content_id']) >0 else 143)
+    section_concepts['section_id'].append(path.splitext(fname)[0])
+    section_concepts['concept'] = '_'.join(list(response))
+    smart_concepts_sections = pd.DataFrame.from_dict(section_concepts)
+    timestamp = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
+    f_timestamp = datetime.today().strftime('%Y%m%d%H%M%S')
+    smart_concepts_sections.loc[:,'resource_id'] = 'pfe'
+    smart_concepts_sections.loc[:,'is_active'] = 1
+    smart_concepts_sections.loc[:,'date_added'] = timestamp # '2024-06-23 19:40:02'
+    return smart_concepts_sections#.to_csv(f'./smart_learning_content_section_{f_timestamp}.csv',index=False)
+    
 
 if __name__ == '__main__':
     local = True

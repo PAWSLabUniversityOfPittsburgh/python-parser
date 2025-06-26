@@ -5,6 +5,7 @@ chap*/
 pcex/
 parsons/
 quizpet/
+temp_code/
 *.json
 *.pyc
 */__pycache__/*
