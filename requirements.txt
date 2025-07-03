@@ -5,4 +5,6 @@ uvicorn[standard]
 pydantic
 requests
 tqdm
+pandas
+numpy
 ply
