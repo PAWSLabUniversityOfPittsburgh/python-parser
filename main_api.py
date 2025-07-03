@@ -10,10 +10,10 @@ class CodeString(BaseModel):
     Custom type for code strings.
     This can be extended with validation if needed.
     """
-    content_id: int
-    code_str: str
-    section_id: str
-    resource_id: str
+    content_id: int = 123
+    code_str: str = ""
+    section_id: str = ""
+    resource_id: str = ""
     is_active: int = 1  # Default value for is_active
     date_added: str = None  # Default value for date_added
 
