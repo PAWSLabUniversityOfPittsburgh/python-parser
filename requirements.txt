@@ -1,4 +1,8 @@
 streamlit-ace
+streamlit
+fastapi[standard]
+uvicorn[standard]
+pydantic
 requests
 tqdm
 ply
