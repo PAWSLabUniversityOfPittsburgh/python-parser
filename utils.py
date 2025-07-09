@@ -10,7 +10,7 @@ from ply.lex import lex
 # will be added to the list instead of the operator family.
 nodesToSkip = {'Store', 'Load', 'Name', 'Expr', 'arguments', 'Subscript', 'BoolOp', 'BinOp', 'Compare', 'UnaryOp'}
 tokensToSkip = {}
-allowed_call_names = ['print','input','dict','set','list']
+allowed_call_names = json.load(open(path.join(path.dirname(__file__), 'py_keyword_functions.json')))['allowed_call_names']
 
 # *****************************************************************************
 # Special handlers for some nodes
@@ -31,7 +31,11 @@ def simpleTraverse(node, line, nodes):
     name = node.__class__.__name__
     # if name == 'Constant': print(re.split(r'[<,\s,>,\']',str(type(node.__dict__['value']))))
     # if name == 'Call': print(node.__dict__['func'].__dict__['id'])
-    
+    if name == 'Attribute':
+        # print(node.__dict__)
+        name = f"{node.__dict__['attr']}"
+        if not(name.lower() in allowed_call_names): name = ''
+
     if name == 'Constant':
         name = re.split(r'[<,\s,>,\']',str(type(node.__dict__['value'])))[3].capitalize()
 
