@@ -27,14 +27,16 @@ curl -X POST http://127.0.0.1:13456/extract_concepts -H "Content-Type: applicati
 
 curl -X POST http://127.0.0.1:13456/extract_concepts -H "Content-Type: application/json" -d '{"code_str":"import txt\ntest=1"}'
 
+curl -X POST http://127.0.0.1:13456/extract_concepts -H "Content-Type: application/json" -d '{"code_str":"s='hola'"}'
+
 curl -X POST http://127.0.0.1:13456/extract_concepts -H "Content-Type: application/json" -d '{"code_str":"s='hola'\ns[0:2]"}'
 ```
 
 Expected output:
 ```
-Import_alias
+[{"content_id":143,"section_id":"tmp1","concept":"Import_alias","resource_id":"pfe","is_active":1,"date_added":"2025-07-09 19:15:09"}]
 
-Assign_Import_Int_alias
+[{"content_id":143,"section_id":"tmp1","concept":"Assign","resource_id":"pfe","is_active":1,"date_added":"2025-07-09 19:19:48"}]
 
-Int_Assign_Slice_Str
+[{"content_id":143,"section_id":"tmp1","concept":"Assign_Slice_Int","resource_id":"pfe","is_active":1,"date_added":"2025-07-09 19:21:05"}]
 ```
