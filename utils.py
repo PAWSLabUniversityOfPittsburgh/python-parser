@@ -26,11 +26,25 @@ def handleNum(node, line):
 handlers = {'Num' : handleNum, 'NameConstant' : handleNameConstant}
 # *****************************************************************************
 
-def simpleTraverse(node, line, nodes):
+def simpleTraverse(node, line, nodes,prev_node = None):
 
     name = node.__class__.__name__
     # if name == 'Constant': print(re.split(r'[<,\s,>,\']',str(type(node.__dict__['value']))))
     # if name == 'Call': print(node.__dict__['func'].__dict__['id'])
+    
+    name = 'elif' if name.lower() == 'if' and not(prev_node == None) and type(prev_node) == ast.If else name
+
+    prev_node = node.__dict__['orelse'][0] if name.lower() == 'if' and \
+                len(node.__dict__['orelse']) > 0 and\
+                 type(node.__dict__['orelse'][0]) == ast.If \
+                else None
+    if name.lower() == 'if' and len(node.__dict__['orelse']) > 0: name = name
+    
+    if name.lower() == 'if'  and \
+        len(node.__dict__['orelse']) > 0 and \
+        not(type(node.__dict__['orelse'][0])) == ast.If: name = f'{name}_else'
+    if name.lower() == 'elif': name = f'{name}_else'
+
     if name == 'Attribute':
         # print(node.__dict__)
         name = f"{node.__dict__['attr']}"
@@ -57,7 +71,7 @@ def simpleTraverse(node, line, nodes):
             nodes['lines'][line].add(handlers[name](node, line))
 
     for child in ast.iter_child_nodes(node):
-        simpleTraverse(child, line, nodes)
+        simpleTraverse(child, line, nodes, prev_node)
 
 def complexTraverse(node, line, nodes):
 
