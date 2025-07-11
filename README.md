@@ -5,7 +5,7 @@ returns the found concepts by traversing the AST
 of the code.
 
 
-## Requires 
+## Requires
 Python==3.9.22
 
 ## To run frontend
@@ -30,9 +30,12 @@ source test_docker.sh
 
 Expected output:
 ```
+
 [{"content_id":143,"section_id":"tmp1","concept":"Import_alias","resource_id":"pfe","is_active":1,"date_added":"2025-07-09 19:15:09"}]
 
 [{"content_id":143,"section_id":"tmp1","concept":"Assign","resource_id":"pfe","is_active":1,"date_added":"2025-07-09 19:19:48"}]
 
 [{"content_id":143,"section_id":"tmp1","concept":"Assign_Slice_Int","resource_id":"pfe","is_active":1,"date_added":"2025-07-09 19:21:05"}]
+
+ok
 ```
