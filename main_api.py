@@ -17,6 +17,11 @@ class CodeString(BaseModel):
     is_active: int = 1  # Default value for is_active
     date_added: str = None  # Default value for date_added
 
+@app.get("/test_api")
+async def test_api():
+    return {"message": "API is working!"}
+
+
 @app.post("/extract_concepts")
 async def extract_concepts(code_json: CodeString):
     print(code_json)
