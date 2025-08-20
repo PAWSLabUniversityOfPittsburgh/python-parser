@@ -1,16 +1,20 @@
 import ast, json, sys, re, os
+from ast import Call, Name, Attribute, Load,Store
 from os import path
 from tqdm import tqdm
 import pandas as pd
 from ply.lex import lex
+from version import __developer__
 
 # These nodes will be ignored and are not added to the node list.
 #
 # For example, the operators are skipped because the actual operator
 # will be added to the list instead of the operator family.
-nodesToSkip = {'Store', 'Load', 'Name', 'Expr', 'arguments', 'Subscript', 'BoolOp', 'BinOp', 'Compare', 'UnaryOp'}
+nodesToSkip = {'Store', 'Load', 'Name', 'Expr', 'arg', 'arguments','Subscript', 'BoolOp', 'BinOp', 'Compare', 'UnaryOp'} ## we skip these because this data can be parsed with other nodes
 tokensToSkip = {}
-allowed_call_names = json.load(open(path.join(path.dirname(__file__), 'py_keyword_functions.json')))['allowed_call_names']
+associated_py_concepts = json.load(open(path.join(path.dirname(__file__), './static/py_keyword_functions.json'))) ## function keywords associated concepts
+op_py_concepts = json.load(open(path.join(path.dirname(__file__), './static/py_ops.json')))
+
 
 # *****************************************************************************
 # Special handlers for some nodes
@@ -24,42 +28,104 @@ def handleNum(node, line):
     return node.n.__class__.__name__.capitalize()
 
 handlers = {'Num' : handleNum, 'NameConstant' : handleNameConstant}
+
+def get_name_from_ast_object(node,type):
+    if type == 'Name':
+        # print(node.__dict__,node.__dict__['id'])
+        name = node.__dict__['id']
+        if name.endswith('Error'): return 'Exception-Types'
+        
+        if name in associated_py_concepts: return associated_py_concepts[name].capitalize()
+        if node.__dict__['ctx'] == Store: return 'Variable-decl-or-assign'
+        if node.__dict__['ctx'] == Load: return "Variable-usage"
+    
+    if type == 'Attribute':
+        # pass
+        name = node.__dict__['attr']
+        if name.endswith('Try') or name.endswith('ExceptHandler'): return 'Exception-Handler'
+        if name in associated_py_concepts: return associated_py_concepts[name].capitalize()
+        return name
+
+    if type == 'Call':
+        
+        CallObjectDict = node.__dict__['func'].__dict__
+        CallObjectNode = node.__dict__['func']
+
+        lineno = CallObjectDict['lineno']
+        
+        if False: print(CallObjectNode.__class__.name,
+            CallObjectDict,
+            CallObjectDict['id'] if 'id' in CallObjectDict['id'] else CallObjectDict['value'],
+            CallObjectDict['ctx']
+        )
+
+        if 'id' in CallObjectDict:
+            return f"{associated_py_concepts[CallObjectDict['id']].capitalize()}" if CallObjectDict['id'] in associated_py_concepts else 'Class-Obj-Instantiate', lineno
+
+        elif 'attr' in CallObjectDict:
+            return f"{associated_py_concepts[CallObjectDict['attr']].capitalize()}" if CallObjectDict['attr'] in associated_py_concepts else 'ClassMethod-or-Function-Call', lineno
+        
+        else: f"Parsed Concept {type}: this should not happen -- email {__developer__}"
+
+    else:
+        
+        if type in op_py_concepts:
+            print(type)
+            return op_py_concepts[type].capitalize()
+    
+    return type.capitalize()
+
+
 # *****************************************************************************
 
 def simpleTraverse(node, line, nodes,prev_node = None):
 
     name = node.__class__.__name__
+    lineno = node.__dict__['lineno'] if 'lineno' in node.__dict__ else 0#node.__dict__[''].__dict__['lineno']
     # if name == 'Constant': print(re.split(r'[<,\s,>,\']',str(type(node.__dict__['value']))))
     # if name == 'Call': print(node.__dict__['func'].__dict__['id'])
-    
-    name = 'elif' if name.lower() == 'if' and not(prev_node == None) and type(prev_node) == ast.If else name
+    # print(prev_node)
+    name = 'if-elif' if name.lower() == 'if' and not(prev_node == None) and type(prev_node) == ast.If else name
 
     prev_node = node.__dict__['orelse'][0] if name.lower() == 'if' and \
                 len(node.__dict__['orelse']) > 0 and\
                  type(node.__dict__['orelse'][0]) == ast.If \
-                else None
+                else node if prev_node == None else prev_node
+    
     if name.lower() == 'if' and len(node.__dict__['orelse']) > 0: name = name
     
     if name.lower() == 'if'  and \
         len(node.__dict__['orelse']) > 0 and \
-        not(type(node.__dict__['orelse'][0])) == ast.If: name = f'{name}_else'
-    if name.lower() == 'elif': name = f'{name}_else'
+        not(type(node.__dict__['orelse'][0])) == ast.If: name = f'{name}-else'
+    if name.lower() == 'elif': name = f'{name}-else'
+
+    if name == 'Name':
+        # print(name,node.__dict__)
+        # print(name, prev_node.__dict__)
+        
+        name = get_name_from_ast_object(node,'Name')
+            
 
     if name == 'Attribute':
-        # print(node.__dict__)
-        name = f"{node.__dict__['attr']}"
-        if not(name.lower() in allowed_call_names): name = ''
+        # print(name, node.__dict__['attr'].capitalize(), node.__dict__['value'].__dict__['id'],prev_node.__dict__)
+        
+        name = get_name_from_ast_object(node,'Attribute')
+
 
     if name == 'Constant':
+        # print(name, node.__dict__)
         name = re.split(r'[<,\s,>,\']',str(type(node.__dict__['value'])))[3].capitalize()
+        
 
-    if name =='Call':  
-        name = f"{node.__dict__['func'].__dict__['id']}" if 'id' in node.__dict__['func'].__dict__ else ''
-        if not(name.lower() in allowed_call_names): name = ''
+    if name == 'Call':  
 
-    # Only some nodes contain line number
-    if hasattr(node, 'lineno'):
-        line = node.lineno
+        name,lineno = get_name_from_ast_object(node,'Call')
+
+    else:
+        if name not in nodesToSkip:
+            
+            name = get_name_from_ast_object(node,name)
+        
 
     if name not in nodesToSkip:
         if line not in nodes['lines']:

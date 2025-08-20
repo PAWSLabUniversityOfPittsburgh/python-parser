@@ -16,6 +16,7 @@ from tqdm import tqdm
 import pandas as pd
 from utils import *
 from datetime import datetime
+from version import __version__
 
 
 def main(local=True,filename='./py-files/chap2/sec_2_7.py',mode='simple'):
@@ -74,27 +75,40 @@ def main(local=True,filename='./py-files/chap2/sec_2_7.py',mode='simple'):
             print(json.dumps(nodes))
         
         if local:
-            return codelines ,merge_lines_nodes(nodes)#.union(tokens)
+            return merge_lines_nodes(nodes)#.union(tokens)
 
     except Exception as e:
         print('Parsing failed!\n\nError occurred: ' + str(e), file=sys.stderr)
         # print(re.split(r'[<,\s,>,\']',str(type(e)))[3], f'line no {e.args[1][1]}')
         if not(local): sys.exit(1)
 
-def post_process_parser(response,fname='tmp1.py'):
-    section_concepts = {}
-    section_concepts['content_id'] = []
-    section_concepts ['section_id']= []    
-    section_concepts['content_id'].append(section_concepts['content_id'][-1]+1 if len(section_concepts['content_id']) >0 else 143)
-    section_concepts['section_id'].append(path.splitext(fname)[0])
-    section_concepts['concept'] = '_'.join(list(response))
-    smart_concepts_sections = pd.DataFrame.from_dict(section_concepts)
-    timestamp = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
-    f_timestamp = datetime.today().strftime('%Y%m%d%H%M%S')
-    smart_concepts_sections.loc[:,'resource_id'] = 'pfe'
-    smart_concepts_sections.loc[:,'is_active'] = 1
-    smart_concepts_sections.loc[:,'date_added'] = timestamp # '2024-06-23 19:40:02'
-    return smart_concepts_sections#.to_csv(f'./smart_learning_content_section_{f_timestamp}.csv',index=False)
+def post_process_parser(response,fname='tmp1.py',activity_id = pd.NA):
+    concept_ids = json.load(open('./static/um2_python_concept_ids.json','r'))
+    section_concepts = []
+    for concept in list(response):
+        # format as per aggregate.kc_content_component
+        # concept id from um2.ent_concept + um2.rel_concept_activity for python only
+        # activity id provided by teh user
+        section_concepts.append(
+           {   
+              'aggregate_id' : pd.NA,
+              'um2_activity_id': activity_id,
+              'aggregate_content_name': path.splitext(fname)[0],
+              'um2_concept_id' : concept_ids[concept] if concept in concept_ids else pd.NA,
+              'aggregate_component_name':concept,
+              'aggregate_context_name': concept,
+              'aggregate_domain':'py',
+              'um2_aggregate_weight': 1,
+              'aggregate_active': 1,
+              'um2_direction': 0,
+              'aggregate_source_method': f'Arun Parser v{__version__}',
+              'um2_concept_description': f'Arun Parser v{__version__}',
+              'importance':0,
+              'contributesK':0
+            #   'date_added': datetime.today().strftime('%Y-%m-%d %H:%M:%S')
+           }
+        )
+    return section_concepts
     
 
 if __name__ == '__main__':
