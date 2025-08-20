@@ -55,7 +55,7 @@ async def extract_concepts(code_json: CodeString):
         os.remove('./py-files/tmp1.py')
         os.rmdir('./py-files')
 
-        response_df =  post_process_parser(response)
+        response_df =  post_process_parser(response,code_json.aggregate_content_name,code_json.um2_activity_id)
         return response_df
     
     except Exception as e:
