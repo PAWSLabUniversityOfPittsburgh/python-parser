@@ -11,20 +11,21 @@ class CodeString(BaseModel):
     Custom type for code strings.
     This can be extended with validation if needed.
     """
-    'aggregate_id' :int = 11111 ## Leave this blank if for insert query, otherwise provide 'id' column in aggregate_kc_content_component
-    'um2_activity_id':int = 11111 ## Leave this blank if for insert query, otherwise provide 'id' column in um2_ent_activity,
-    'aggregate_content_name':str =  'tmp' ### if use content_name as stored in um2_ent_activity,
-    'um2_concept_id' : int ## this will be generated from backend
-    'aggregate_component_name':str
-    'aggregate_context_name': str
-    'aggregate_domain':str = 'py' ## defaults to python
-    'um2_aggregate_weight':int =  1
-    'aggregate_active':int = 1
-    'um2_direction': int = 0
-    'aggregate_source_method':str = f'Arun Parser v{__version__}'
-    'um2_concept_description':str =  f'Arun Parser v{__version__}'
-    'importance':int = 0
-    'contributesK':int = 0
+    aggregate_id :int = 11111 ## Leave this blank if for insert query, otherwise provide id column in aggregate_kc_content_component
+    um2_activity_id:int = 11111 ## Leave this blank if for insert query, otherwise provide id column in um2_ent_activity,
+    aggregate_content_name:str =  'tmp' ### if use content_name as stored in um2_ent_activity,
+    code_str:str
+    # um2_concept_id : int ## this will be generated from backend
+    # aggregate_component_name:str
+    # aggregate_context_name: str
+    # aggregate_domain:str = 'py' ## defaults to python
+    # um2_aggregate_weight:int =  1
+    # aggregate_active:int = 1
+    # um2_direction: int = 0
+    # aggregate_source_method:str = f'Arun Parser v{__version__}'
+    # um2_concept_description:str =  f'Arun Parser v{__version__}'
+    # importance:int = 0
+    # contributesK:int = 0
 
 @app.get("/test_api")
 async def test_api():
