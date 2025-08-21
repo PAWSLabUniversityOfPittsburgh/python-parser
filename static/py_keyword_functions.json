@@ -11,7 +11,7 @@
     "float": "typecast-float",
     "bool": "typecast-bool",
     "len":"length-of-collection-or-str",
-    "range":"range-for-iter",
+    "range":"range-func",
     "enumerate":"enumerate-for-iter",
     "zip":"create-dict-for-iter",
     "sorted":"sort-collection",
@@ -96,5 +96,6 @@
        "oct":"get-octal",
        "hex":"get-hex",
        "format":"str-format-func",
-       "divmod":"modulo"
+       "divmod":"modulo",
+       "Keyword": "func-keyword-arguments"
 }

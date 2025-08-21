@@ -1,6 +1,7 @@
 import ast, json, sys, re, os
-from ast import Call, Name, Attribute, Load,Store
+from ast import Load,Store, For, If, While, Call, Add, Sub
 from os import path
+from webbrowser import get
 from tqdm import tqdm
 import pandas as pd
 from ply.lex import lex
@@ -8,7 +9,7 @@ from version import __developer__
 
 # These nodes will be ignored and are not added to the node list.
 #
-# For example, the operators are skipped because the actual operator
+# For example, the operators are skipped b  ecause the actual operator
 # will be added to the list instead of the operator family.
 nodesToSkip = {'Store', 'Load', 'Name', 'Expr', 'arg', 'arguments','Subscript', 'BoolOp', 'BinOp', 'Compare', 'UnaryOp'} ## we skip these because this data can be parsed with other nodes
 tokensToSkip = {}
@@ -29,24 +30,24 @@ def handleNum(node, line):
 
 handlers = {'Num' : handleNum, 'NameConstant' : handleNameConstant}
 
-def get_name_from_ast_object(node,type):
-    if type == 'Name':
-        # print(node.__dict__,node.__dict__['id'])
+def get_name_from_ast_object(node,type_name):
+    if type_name == 'Name':
+        
         name = node.__dict__['id']
         if name.endswith('Error'): return 'Exception-Types'
         
         if name in associated_py_concepts: return associated_py_concepts[name].capitalize()
-        if node.__dict__['ctx'] == Store: return 'Variable-decl-or-assign'
-        if node.__dict__['ctx'] == Load: return "Variable-usage"
+        if type(node.__dict__['ctx']) == Store: return 'Variable-decl-or-assign'
+        if type(node.__dict__['ctx']) == Load: return "Variable-usage"
     
-    if type == 'Attribute':
+    if type_name == 'Attribute':
         # pass
         name = node.__dict__['attr']
         if name.endswith('Try') or name.endswith('ExceptHandler'): return 'Exception-Handler'
         if name in associated_py_concepts: return associated_py_concepts[name].capitalize()
         return name
 
-    if type == 'Call':
+    if type_name == 'Call':
         
         CallObjectDict = node.__dict__['func'].__dict__
         CallObjectNode = node.__dict__['func']
@@ -60,20 +61,34 @@ def get_name_from_ast_object(node,type):
         )
 
         if 'id' in CallObjectDict:
-            return f"{associated_py_concepts[CallObjectDict['id']].capitalize()}" if CallObjectDict['id'] in associated_py_concepts else 'Class-Obj-Instantiate', lineno
+            return f"{associated_py_concepts[CallObjectDict['id']].capitalize()}" if CallObjectDict['id'] in associated_py_concepts else 'Class-Obj-Instantiate'
 
         elif 'attr' in CallObjectDict:
-            return f"{associated_py_concepts[CallObjectDict['attr']].capitalize()}" if CallObjectDict['attr'] in associated_py_concepts else 'ClassMethod-or-Function-Call', lineno
+            return f"{associated_py_concepts[CallObjectDict['attr']].capitalize()}" if CallObjectDict['attr'] in associated_py_concepts else 'ClassMethod-or-Function-Call'
         
-        else: f"Parsed Concept {type}: this should not happen -- email {__developer__}"
+        else: f"Parsed Concept {type_name}: this should not happen -- email {__developer__}"
 
     else:
         
-        if type in op_py_concepts:
-            print(type)
-            return op_py_concepts[type].capitalize()
+        if type_name in op_py_concepts:
+            # print(type)
+            return op_py_concepts[type_name].capitalize()
     
-    return type.capitalize()
+    return type_name.capitalize()
+
+
+def handle_nested_if(node_dict_body_or_else,name):
+    if len(node_dict_body_or_else) == 0:  return name
+
+
+    if len(node_dict_body_or_else) > 0:
+        count_expr = 0
+        for elements in node_dict_body_or_else: 
+            if type(elements) == If: return f'Nested-{name}'
+            if not(type(elements) == If): count_expr += 1
+        if count_expr == len(node_dict_body_or_else): return 'if-else'
+        
+
 
 
 # *****************************************************************************
@@ -85,19 +100,40 @@ def simpleTraverse(node, line, nodes,prev_node = None):
     # if name == 'Constant': print(re.split(r'[<,\s,>,\']',str(type(node.__dict__['value']))))
     # if name == 'Call': print(node.__dict__['func'].__dict__['id'])
     # print(prev_node)
-    name = 'if-elif' if name.lower() == 'if' and not(prev_node == None) and type(prev_node) == ast.If else name
+    name = 'if-elif' if name.lower() == 'if' and not(prev_node == None) and type(prev_node) == If else name
 
     prev_node = node.__dict__['orelse'][0] if name.lower() == 'if' and \
                 len(node.__dict__['orelse']) > 0 and\
-                 type(node.__dict__['orelse'][0]) == ast.If \
+                 type(node.__dict__['orelse'][0]) == If \
                 else node if prev_node == None else prev_node
     
-    if name.lower() == 'if' and len(node.__dict__['orelse']) > 0: name = name
+    if name.lower() == 'if' or name.lower() == 'if-elif': 
+        # print(node.__dict__)
+        name1 = f"{handle_nested_if(node.__dict__['body'],name.lower())}"
+        name2 = f"{handle_nested_if(node.__dict__['orelse'], name.lower())}"
+        name = name1 if name1.startswith("Nested") else name2
+
+
+    if (name.lower() =='for' or  name.lower() == 'while'):
+        name = name
+        # print(node.__dict__)
+        if name.lower() == 'while' and len(node.__dict__['orelse']) > 0: name = f'{name}-else'.capitalize()
+        if name.lower() == 'while': f"{name}-{get_name_from_ast_object(node.__dict__['test'],'')}".capitalize()
+        if name.lower() == 'for' and type(node.__dict__['iter']) == Call: name = f"{name}-{get_name_from_ast_object(node.__dict__['iter'],'Call')}-{get_name_from_ast_object(node.__dict__['target'],'Name')}".capitalize()
+
+        for elements in node.__dict__['body']:
+            if type(elements) == For or type(elements) == While: name = f'Nested-{name}'.capitalize()
     
-    if name.lower() == 'if'  and \
-        len(node.__dict__['orelse']) > 0 and \
-        not(type(node.__dict__['orelse'][0])) == ast.If: name = f'{name}-else'
-    if name.lower() == 'elif': name = f'{name}-else'
+            # if type(elements) == Expr:
+                # print(elements)
+                # simpleTraverse(elements,node.__dict__['lineno'],nodes)
+
+    if name.lower() == 'keyword':
+        name = f"keyword-args:{node.__dict__['arg']}"
+
+    if name.lower() == 'augassign':
+        if type(node.__dict__['op']) == Add: name = "Assignment-with-Add"
+        if type(node.__dict__['op']) == Sub: name = "Assignment-with-Sub"
 
     if name == 'Name':
         # print(name,node.__dict__)
@@ -119,7 +155,7 @@ def simpleTraverse(node, line, nodes,prev_node = None):
 
     if name == 'Call':  
 
-        name,lineno = get_name_from_ast_object(node,'Call')
+        name = get_name_from_ast_object(node,'Call')
 
     else:
         if name not in nodesToSkip:

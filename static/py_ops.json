@@ -30,5 +30,6 @@
     "ExceptHandler":"Exception-Handler",
     "And":"Conditional-And",
     "Or":"Conditional-Or",
-    "Assign": "Numeric-or-String-or-Collection-Assignment"
+    "Assign": "Numeric-or-String-or-Collection-Assignment",
+    "Keyword":"func-keyword-arguments"
 }
