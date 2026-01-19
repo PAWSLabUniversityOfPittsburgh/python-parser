@@ -32,8 +32,10 @@ handlers = {'Num' : handleNum, 'NameConstant' : handleNameConstant}
 
 def get_name_from_ast_object(node,type_name):
     if type_name == 'Name':
-        
-        name = node.__dict__['id']
+
+        name = node.__dict__['id'] if 'id' in node.__dict__ else \
+            ','.join([x.__dict__['id'] for x in node.__dict__['elts']]) if 'elts' in node.__dict__ else ''
+
         if name.endswith('Error'): return 'Exception-Types'
         
         if name in associated_py_concepts: return associated_py_concepts[name].capitalize()
